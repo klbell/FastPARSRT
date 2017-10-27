@@ -77,7 +77,7 @@ int runPARSRT()
 
 		while (!gageStreamRealtime())
 		{
-			if (updateScopeWindow())
+			if (updateScopeWindowFast())
 			{
 				break;
 			}

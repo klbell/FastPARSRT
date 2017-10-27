@@ -16,6 +16,7 @@ void minMaxExtract(void*  pWorkBuffer, uInt32 u32TransferSize);
 void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize);
 void minMaxExtractMT(void* pWorkBuffer, uInt32 u32TransferSize, uInt32 totalSampleTransfered);
 int updateScopeWindow();
+int updateScopeWindowFast();
 int makeImageRealtime(void* pWorkBuffer);
 void resetWindowVars(); // Resets counting variables for next pass
 int checkWindowCommands();
