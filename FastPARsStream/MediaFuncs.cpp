@@ -130,9 +130,9 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 	int16 tempmaxdata = 0;
 	size_t sizetrue = 0;
 
-	int16 *triggerdata;
+	int *triggerdata;
 	BOOL *logicData, bthreshold, bderivative, blogictemp;
-	triggerdata = new int16[u32TransferSize];
+	triggerdata = new int[u32TransferSize];
 	logicData = new BOOL[u32TransferSize];
 
 	for (int n = u32TransferSize * 3, m = 0; n < u32TransferSize * 4; n++, m++)
@@ -145,12 +145,12 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 	}
 
 	// Find values above threshold
-	int16 thresVal = 0.8*tempmaxdata; //watch out
+	int thresVal = 0.3*tempmaxdata; //watch out
 	logicData[0] = 0;
 	for (int n = 1; n < u32TransferSize; n++)
 	{
 		bthreshold = triggerdata[n] > thresVal;
-		bderivative = (triggerdata[n + 1] - triggerdata[n]) > 0;
+		bderivative = (triggerdata[n] - triggerdata[n-1]) > 0;
 
 		blogictemp = bthreshold*bderivative;
 
@@ -164,8 +164,8 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 	
 
 	// Find values where logicData is true, and record locations
-	int16 *logicDataloc;
-	logicDataloc = new int16[sizetrue];
+	int *logicDataloc;
+	logicDataloc = new int[sizetrue];
 
 	for (int n = 0, m = 0; n < u32TransferSize; n++)
 	{
@@ -194,27 +194,28 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 		tempY = actualData[2 * u32TransferSize + tempLoc];
 		xdata[n] = tempX;
 		ydata[n] = tempY;
-		if (tempX>xMax)
+
+		if (tempX > maxX)
 		{
-			xMax = tempX;
+			maxX = tempX;
 		}
-		if (tempY>yMax)
+		if (tempY > maxY)
 		{
-			yMax = tempY;
+			maxY = tempY;
 		}
-		if (tempX<xMin)
+		if (tempX < minX)
 		{
-			xMin = tempX;
+			minX = tempX;
 		}
-		if (tempY<yMin)
+		if (tempY < minY)
 		{
-			yMin = tempY;
+			minY = tempY;
 		}
 	}
-	rangeX = xMax - xMin;
-	rangeY = yMax - yMin;
-	halfX = (xMax - xMin) / 2;
-	halfY = (yMax - yMin) / 2;
+	rangeX = maxX - minX;
+	rangeY = maxY - minY;
+	halfX = (maxX - minX) / 2;
+	halfY = (maxY - minY) / 2;
 
 	//This is where we would clean and apply our corrections
 
@@ -260,7 +261,8 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 		}
 	}
 	rangeSig = maxVal - minVal;
-
+	minSig = minVal;
+	captureCount = sizetrue;
 }
 
 void minMaxExtractMT(void*  pWorkBuffer, uInt32 u32TransferSize, uInt32 totalSamplesTrans)
@@ -558,25 +560,18 @@ int updateScopeWindowFast()
 
 	scopeImage.create(imageWidth, imageHeight, sf::Color::Black);
 
-	// Find range and half values
-	rangeX = maxX - minX;
-	rangeY = maxY - minY;
-	rangeSig = maxSig - minSig;
-	halfX = rangeX / 2;
-	halfY = rangeY / 2;
-
 	// plot points on test grid
 	for (int n = 0; n < captureCount; n++)
 	{
 		// Determine draw location
-		xLoc = ((float)(mirrData[0][n] - minX)*0.98 / rangeX) * interpWidth;
-		yLoc = ((float)(mirrData[1][n] - minY)*0.98 / rangeY) * interpHeight;
+		xLoc = ((float)(xdata[n] - minX)*0.98 / rangeX) * interpWidth;
+		yLoc = ((float)(ydata[n] - minY)*0.98 / rangeY) * interpHeight;
 
 		// Determine pixel intensity
-		intensity = (((float)(peakData[n] - minSig)*1.5 / rangeSig)) * 255;
-		intensity = min(240, intensity);
+		intensity = (((float)(peakRawData[n] - minSig) / rangeSig)) * 255; //removed 1.5 scaling factor
+		// intensity = min(240, intensity); - settings a threshold value
 
-		testgrid[yLoc][xLoc] += intensity;
+		testgrid[yLoc][xLoc] += intensity; //potential speed up
 		testgridCount[yLoc][xLoc]++;
 	}
 
@@ -604,7 +599,7 @@ int updateScopeWindowFast()
 		{
 			for (int j = 1; j < interpWidth - 1; j++)
 			{
-				// spactial averaging
+				// spatial averaging
 				if (testgridCount[i][j] == 0)
 				{
 					testgrid[i][j] = (testgrid[i - 1][j] + testgrid[i + 1][j] + testgrid[i][j - 1] + testgrid[i][j + 1]) / 4;
@@ -623,7 +618,7 @@ int updateScopeWindowFast()
 				color.g = colormap[intensity][1];
 				color.b = colormap[intensity][2];
 
-				for (int a = i*interpLevel; a <= (i + 1)*interpLevel; a++)
+				for (int a = i*interpLevel; a <= (i + 1)*interpLevel; a++) //most efficent way?
 				{
 					for (int b = j*interpLevel; b <= (j + 1)*interpLevel; b++)
 					{
