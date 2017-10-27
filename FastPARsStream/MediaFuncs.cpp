@@ -120,9 +120,101 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 	int16* actualData = (int16*)pWorkBuffer;
 	int totalLength = u32TransferSize * 4;
 
-	int16 * peakRawData;
-	peakRawData = new int16[u32TransferSize];
+	// Extract trigger signal
+	int16 tempmaxdata = 0;
+	size_t sizetrue = 0;
 
+	int16 *triggerdata;
+	BOOL *logicData, bthreshold, bderivative, blogictemp;
+	triggerdata = new int16[u32TransferSize];
+	logicData = new BOOL[u32TransferSize];
+
+	for (int n = u32TransferSize * 3, m = 0; n < u32TransferSize * 4; n++, m++)
+	{
+		triggerdata[m] = actualData[n];
+		if (triggerdata[m] > tempmaxdata)
+		{
+			tempmaxdata = triggerdata[m];
+		}
+	}
+
+	// Find values above threshold
+	int16 thresVal = 0.8*tempmaxdata; //watch out
+	logicData[0] = 0;
+	for (int n = 1; n < u32TransferSize; n++)
+	{
+		bthreshold = triggerdata[n] > thresVal;
+		bderivative = (triggerdata[n + 1] - triggerdata[n]) > 0;
+
+		blogictemp = bthreshold*bderivative;
+
+		logicData[n] = blogictemp;
+
+		if (blogictemp != 0)
+		{
+			sizetrue++;
+		}
+	}
+	
+
+	// Find values where logicData is true, and record locations
+	int16 *logicDataloc;
+	logicDataloc = new int16[sizetrue];
+
+	for (int n = 0, m = 0; n < u32TransferSize; n++)
+	{
+		if (logicData[n] != 0)
+		{
+			logicDataloc[m] = n;
+			m++;
+		}
+	}
+
+	// This is where we check for doubles
+
+
+	// Extract mirror data
+	size_t tempLoc, tempLocEnd;
+
+	int16 *xdata, *ydata;
+	xdata = new int16[sizetrue];
+	ydata = new int16[sizetrue];
+
+	for (int n = 0; n < sizetrue; n++)
+	{
+		tempLoc = logicDataloc[n];
+		xdata[n] = actualData[u32TransferSize + tempLoc];
+		ydata[n] = actualData[2 * u32TransferSize + tempLoc];
+	}
+
+	//This is where we would clean and apply our corrections
+
+	// Extract signal data
+	int16 minVal, maxVal, tempVal;
+	int16 * peakRawData;
+	peakRawData = new int16[sizetrue];
+
+	for (int n = 0; n < sizetrue - 1; n++)
+	{
+		minVal = 0;
+		maxVal = 0;
+		tempLoc = logicDataloc[n];
+		tempLocEnd = logicDataloc[n + 1] - 1;
+		for (int m = tempLoc; m < tempLocEnd; m++)
+		{
+			tempVal = actualData[m];
+			if (tempVal > maxVal)
+			{
+				maxVal = tempVal;
+			}
+			if (tempVal < minVal)
+			{
+				minVal = tempVal;
+			}
+		}
+		peakRawData[n] = maxVal - minVal;
+	}
+	peakRawData[sizetrue - 1] = 0; //For now - fix later?
 
 	// Extract signal data
 	for (int16 n = 0; n < u32TransferSize; n++)

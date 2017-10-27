@@ -20,6 +20,7 @@
 #include "MiscFuncs.h"
 #include "HilbertMath.h"
 #include "MediaFuncs.h"
+#include <list.h>
 
 
 int runPARS();

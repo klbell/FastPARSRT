@@ -1166,7 +1166,7 @@ int gageStreamRealtime()
 			if (NULL != pWorkBuffer)
 			{
 				// Do analysis
-				minMaxExtract(pWorkBuffer, CsAcqCfg.i64SegmentSize);
+				minMaxExtractFast(pWorkBuffer, CsAcqCfg.i64SegmentSize);
 			}
 		}
 		
@@ -1234,7 +1234,7 @@ int gageStreamRealtime()
 	{
 		if (u32SaveCount < CsAcqCfg.u32SegmentCount)
 		{
-			minMaxExtract(pWorkBuffer, CsAcqCfg.i64SegmentSize);
+			minMaxExtractFast(pWorkBuffer, CsAcqCfg.i64SegmentSize);
 		}
 	}
 	
