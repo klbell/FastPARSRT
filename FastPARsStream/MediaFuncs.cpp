@@ -3,6 +3,7 @@
 // Settings
 
 float satLevel = 0.5; // percetn of max where signal saturation is forced
+bool oldAverage = true;
 
 
 // Other Variables
@@ -15,11 +16,12 @@ int16 **mirrData;
 int16 *xdata, *ydata;
 float halfX, halfY, rangeX, rangeY, rangeSig;
 int16 * peakRawData;
+int16* actualData;
 
 uInt8 colormap[256][3];
 
-int imageWidth = 300;
-int imageHeight = 300;
+int imageWidth = 600;
+int imageHeight = 600;
 
 int interpLevel = 2; // size (in pixels) of output pixels;
 int interpHeight, interpWidth;
@@ -88,7 +90,7 @@ void initializeWindowVars(bool MT)
 void minMaxExtract(void*  pWorkBuffer, uInt32 u32TransferSize)
 {
 	// Convert in data
-	int16* actualData = (int16*)pWorkBuffer;
+	actualData = (int16*)pWorkBuffer;
 	int totalLength = u32TransferSize * 4;
 
 	int16 * peakRawData;
@@ -123,7 +125,8 @@ void minMaxExtract(void*  pWorkBuffer, uInt32 u32TransferSize)
 void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 {
 	// Convert in data
-	int16* actualData = (int16*)pWorkBuffer;
+	actualData = (int16*)pWorkBuffer;
+	// int u32TransferSize = u32TransferSizeTemp;
 	int totalLength = u32TransferSize * 4;
 
 	// Extract trigger signal
@@ -135,9 +138,9 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 	triggerdata = new int[u32TransferSize];
 	logicData = new BOOL[u32TransferSize];
 
-	for (int n = u32TransferSize * 3, m = 0; n < u32TransferSize * 4; n++, m++)
+	for (int n = 0, m = 0; n < u32TransferSize; n++, m++)
 	{
-		triggerdata[m] = actualData[n];
+		triggerdata[m] = actualData[4*n+3];
 		if (triggerdata[m] > tempmaxdata)
 		{
 			tempmaxdata = triggerdata[m];
@@ -162,6 +165,10 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 		}
 	}
 	
+	// Free up memory
+	delete[]triggerdata;
+
+
 
 	// Find values where logicData is true, and record locations
 	int *logicDataloc;
@@ -178,9 +185,11 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 
 	// This is where we check for doubles
 
+	// Free up memory
+	delete[]logicData;
 
 	// Extract mirror data
-	size_t tempLoc, tempLocEnd;
+	int tempLoc, tempLocEnd;
 	int16 xMax = 0, yMax = 0, xMin = 0, yMin = 0, tempX, tempY;
 
 	
@@ -190,8 +199,8 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 	for (int n = 0; n < sizetrue; n++)
 	{
 		tempLoc = logicDataloc[n];
-		tempX = actualData[u32TransferSize + tempLoc];
-		tempY = actualData[2 * u32TransferSize + tempLoc];
+		tempX = actualData[4*tempLoc+1];
+		tempY = actualData[4*tempLoc+2];
 		xdata[n] = tempX;
 		ydata[n] = tempY;
 
@@ -231,7 +240,7 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 		tempLocEnd = logicDataloc[n + 1] - 1;
 		for (int m = tempLoc; m < tempLocEnd; m++)
 		{
-			tempVal = actualData[m];
+			tempVal = actualData[4*m];
 			if (tempVal > maxVal)
 			{
 				maxVal = tempVal;
@@ -244,6 +253,9 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 		peakRawData[n] = maxVal - minVal;
 	}
 	peakRawData[sizetrue - 1] = 0; //For now - fix later?
+
+	// Free up memory
+	delete[]logicDataloc, actualData;
 	
 	minVal = 0;
 	maxVal = 0;
@@ -575,6 +587,9 @@ int updateScopeWindowFast()
 		testgridCount[yLoc][xLoc]++;
 	}
 
+	// Free up memory
+	delete[]xdata,ydata,peakRawData;
+
 	// Average grid pixels which have multiple occurrances
 	for (int i = 0; i < interpHeight; i++)
 	{
@@ -587,7 +602,7 @@ int updateScopeWindowFast()
 		}
 	}
 
-	bool oldAverage = false;
+	
 	int sUp, sDown, sRight, sLeft; // for fancy averaging
 	float wUp, wDown, wLeft, wRight, wDen;
 	float wMult = 2;

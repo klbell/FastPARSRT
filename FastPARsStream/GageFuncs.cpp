@@ -414,7 +414,7 @@ int saveGageData(LPCTSTR saveDirectory)
 
 	_ftprintf(stdout, "Complete!\n\n");
 
-	delete iRawData;
+	delete []iRawData,outputStream;
 	return 0;
 }
 
@@ -1166,7 +1166,7 @@ int gageStreamRealtime()
 			if (NULL != pWorkBuffer)
 			{
 				// Do analysis
-				minMaxExtractFast(pWorkBuffer, CsAcqCfg.i64SegmentSize);
+				minMaxExtractFast(pWorkBuffer, CsAcqCfg.i64SegmentSize); // CsAcqCfg.i64SegmentSize
 			}
 		}
 		

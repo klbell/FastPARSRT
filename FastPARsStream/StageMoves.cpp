@@ -22,7 +22,7 @@ void moveXStage(int steps, uInt8 clockSig[])
 	DAQmxStopTask(XClockOut);
 	DAQmxClearTask(XClockOut);
 
-	delete signal;
+	delete [] signal;
 }
 
 
@@ -46,7 +46,7 @@ void moveYStage(int steps, uInt8 clockSig[])
 	DAQmxStopTask(YClockOut);
 	DAQmxClearTask(YClockOut);
 
-	delete signal;
+	delete [] signal;
 }
 
 
