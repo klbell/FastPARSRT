@@ -8,6 +8,8 @@ int main()
 {
 	int scanMode;
 
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
 
 	illuWelcome();
 	
@@ -34,6 +36,7 @@ int main()
 		}
 	}
 	
+	//_CrtDumpMemoryLeaks();
 	return 0;
 }
 
@@ -83,7 +86,7 @@ int runPARSRT()
 			}
 		}
 
-		releaseGageRT(); // Release Gage card
+		releaseGageRT(); // Release Gage card		
 	}
 
 	return 0;

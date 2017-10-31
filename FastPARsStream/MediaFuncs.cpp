@@ -85,6 +85,9 @@ void initializeWindowVars(bool MT)
 			testgridCount[i][j] = 0;
 		}
 	}
+
+	// free dat mems
+	delete[] peakData, mirrData;
 }
 
 void minMaxExtract(void*  pWorkBuffer, uInt32 u32TransferSize)
@@ -368,6 +371,8 @@ int updateScopeWindow()
 		testgridCount[yLoc][xLoc]++;
 	}
 
+	delete[] peakData;
+
 	// Average grid pixels which have multiple occurrances
 	for (int i = 0; i < interpHeight; i++)
 	{
@@ -502,6 +507,7 @@ int updateScopeWindow()
 		}
 	}
 	
+
 	/*
 	// plot points of image
 	for (int n = 0; n < captureCount; n++)
@@ -552,6 +558,8 @@ int updateScopeWindow()
 	// Check if clossing
 	if (checkWindowCommands())
 	{
+		// free dat mems
+		delete[] testgrid, rendergrid, testgridCount;
 		return 1;
 	}
 	else
@@ -724,6 +732,8 @@ int updateScopeWindowFast()
 		}
 	}
 
+	
+
 	sf::IntRect r1(0, 0, imageWidth, imageHeight);
 	scopeTexture.loadFromImage(scopeImage, r1);
 
@@ -738,7 +748,10 @@ int updateScopeWindowFast()
 	// Check if clossing
 	if (checkWindowCommands())
 	{
+		delete window;
+		delete[] testgrid, rendergrid, testgridCount;
 		return 1;
+
 	}
 	else
 	{
