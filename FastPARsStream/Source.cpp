@@ -56,24 +56,7 @@ int runPARSRT()
 {
 	PARSRTWelcome();
 
-	if (useMTTrans) // Multi threaded transfer
-	{
-		initializeGageStreamMT();
-		OpenRTWindow();
-		initializeWindowVars(true);
-
-		int frameCount = 0;
-
-		while (!gageStreamRealtimeMT())
-		{
-			if (updateScopeWindow())
-			{
-				break;
-			}	
-			_ftprintf(stdout, _T("\nFrame count: %d\n"), ++frameCount);
-		}
-	}
-	else {		
+			
 		initializeGageStream(); // Setup Gage card
 		OpenRTWindow(); // Launch view window
 		initializeWindowVars(false); // Set ploting variables
@@ -87,7 +70,7 @@ int runPARSRT()
 		}
 
 		releaseGageRT(); // Release Gage card		
-	}
+	
 
 	return 0;
 }

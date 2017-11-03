@@ -857,7 +857,7 @@ DWORD WINAPI CardStream(void *CardIndex)
 				if (NULL != pWorkBuffer)
 				{									
 					// Do analysis
-					minMaxExtractMT(pWorkBuffer, g_CsAcqCfg.i64SegmentSize, u32TransferSize_Samples);
+					//minMaxExtractMT(pWorkBuffer, g_CsAcqCfg.i64SegmentSize, u32TransferSize_Samples);
 				}
 			}
 
@@ -1446,6 +1446,11 @@ void UpdateProgress(DWORD	dwTickStart, uInt32 u32UpdateInterval_ms, unsigned lon
 uInt32 getSegmentCount()
 {
 	return CsAcqCfg.u32SegmentCount;
+}
+
+uInt32 getCaptureSize()
+{
+	return CsAcqCfg.i64SegmentSize;
 }
 
 uInt32 getSegmentCountMT()

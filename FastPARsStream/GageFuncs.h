@@ -89,6 +89,7 @@ void UpdateProgress(DWORD dwTickStart, uInt32 u32UpdateInterval, unsigned long l
 
 // Mics Functions
 uInt32 getSegmentCount();
+uInt32 getCaptureSize();
 uInt32 getSegmentCountMT();
 
 #endif
