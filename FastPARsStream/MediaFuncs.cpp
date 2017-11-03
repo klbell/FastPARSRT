@@ -225,9 +225,7 @@ int updateScopeWindowFast()
 		testgridCount[yLoc][xLoc]++;
 	}
 
-	// Free up memory
-	delete[]xdata,ydata,peakRawData;
-
+	
 	// Average grid pixels which have multiple occurrances
 	for (int i = 0; i < interpHeight; i++)
 	{
@@ -298,7 +296,7 @@ int updateScopeWindowFast()
 	if (checkWindowCommands())
 	{
 		delete window;
-		delete[] triggerdata, logicData, logicDataloc, actualData;
+		delete[] triggerdata, logicData, logicDataloc, actualData, xdata, ydata, peakRawData;
 		return 1;
 
 	}
