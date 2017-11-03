@@ -84,6 +84,27 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 
 	// Find values above threshold
 	int thresVal = 0.3*tempmaxdata; //watch out
+
+	// Faster
+	logicData[0] = 0;
+	sizetrue = 0;
+	for (int n = 1; n < u32TransferSize; n++)
+	{
+		bthreshold = triggerdata[n] > thresVal;
+		bderivative = (triggerdata[n] - triggerdata[n - 1]) > 0;
+
+		blogictemp = bthreshold*bderivative;
+		logicData[n] = blogictemp;
+
+		if (blogictemp != 0)
+		{
+			logicDataloc[sizetrue] = n;
+			sizetrue++;
+		}
+	}
+
+	/* // Slower
+	sizetrue = 0;
 	logicData[0] = 0;
 	for (int n = 1; n < u32TransferSize; n++)
 	{
@@ -110,7 +131,7 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 			logicDataloc[m] = n;
 			m++;
 		}
-	}
+	}*/
 
 	// This is where we check for doubles
 
@@ -118,6 +139,11 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 	// Extract mirror data
 	int tempLoc, tempLocEnd;
 	int16 xMax = 0, yMax = 0, xMin = 0, yMin = 0, tempX, tempY;	
+
+	maxX = 0;
+	minX = 0;
+	maxY = 0;
+	minY = 0;
 	
 
 	for (int n = 0; n < sizetrue; n++)
@@ -250,6 +276,7 @@ int updateScopeWindowFast()
 		{
 			for (int j = 1; j < interpWidth - 1; j++)
 			{
+				/*
 				// spatial averaging
 				if (testgridCount[i][j] == 0)
 				{
@@ -260,7 +287,7 @@ int updateScopeWindowFast()
 							testgrid[i][j - 1] + testgrid[i][j + 1]) / 6;
 					}
 				}
-
+				*/
 
 				intensity = testgrid[i][j];
 
