@@ -31,6 +31,9 @@ int testgrid[interpHeight][interpWidth];
 int rendergrid[interpHeight][interpWidth];
 int testgridCount[interpHeight][interpWidth];
 
+int *triggerdata, *logicDataloc;
+BOOL *logicData;
+
 int maxX = 0, maxY = 0, maxSig = 0, minX = 0, minY = 0, minSig = 0;
 
 
@@ -45,6 +48,13 @@ void initializeWindowVars(bool MT)
 	// Get segment count
 	//uInt32 segmentCount = getSegmentCount();
 	captureSize = getCaptureSize();
+
+	triggerdata = new int[captureSize];
+	logicData = new BOOL[captureSize];
+	logicDataloc = new int[captureSize];
+	xdata = new int16[captureSize];
+	ydata = new int16[captureSize];	
+	peakRawData = new int16[captureSize];
 	
 	// Load colormap
 	loadColorMap();
@@ -60,10 +70,8 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 	int16 tempmaxdata = 0;
 	size_t sizetrue = 0;
 
-	int *triggerdata;
-	BOOL *logicData, bthreshold, bderivative, blogictemp;
-	triggerdata = new int[u32TransferSize];
-	logicData = new BOOL[u32TransferSize];
+	
+	BOOL bthreshold, bderivative, blogictemp;
 
 	for (int n = 0, m = 0; n < u32TransferSize; n++, m++)
 	{
@@ -92,15 +100,9 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 		}
 	}
 	
-	// Free up memory
-	delete[]triggerdata;
-
 
 
 	// Find values where logicData is true, and record locations
-	int *logicDataloc;
-	logicDataloc = new int[sizetrue];
-
 	for (int n = 0, m = 0; n < u32TransferSize; n++)
 	{
 		if (logicData[n] != 0)
@@ -112,16 +114,11 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 
 	// This is where we check for doubles
 
-	// Free up memory
-	delete[]logicData;
 
 	// Extract mirror data
 	int tempLoc, tempLocEnd;
-	int16 xMax = 0, yMax = 0, xMin = 0, yMin = 0, tempX, tempY;
-
+	int16 xMax = 0, yMax = 0, xMin = 0, yMin = 0, tempX, tempY;	
 	
-	xdata = new int16[sizetrue];
-	ydata = new int16[sizetrue];
 
 	for (int n = 0; n < sizetrue; n++)
 	{
@@ -155,10 +152,9 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 
 	//This is where we would clean and apply our corrections
 
-	// Extract signal data
-	int16 minVal, maxVal, tempVal;	
-	peakRawData = new int16[sizetrue];
+	int16 minVal, maxVal, tempVal;
 
+	// Extract signal data
 	for (int n = 0; n < sizetrue - 1; n++)
 	{
 		minVal = 0;
@@ -181,9 +177,7 @@ void minMaxExtractFast(void*  pWorkBuffer, uInt32 u32TransferSize)
 	}
 	peakRawData[sizetrue - 1] = 0; //For now - fix later?
 
-	// Free up memory
-	delete[]logicDataloc, actualData;
-	
+		
 	minVal = 0;
 	maxVal = 0;
 
@@ -304,6 +298,7 @@ int updateScopeWindowFast()
 	if (checkWindowCommands())
 	{
 		delete window;
+		delete[] triggerdata, logicData, logicDataloc, actualData;
 		return 1;
 
 	}
